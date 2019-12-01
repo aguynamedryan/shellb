@@ -24,6 +24,42 @@ Or install it yourself as:
 
 TODO: Write usage instructions here
 
+## Examples
+
+```
+%w[a b c d e f g].each do |cmd|
+  ShellB.def_system_command(cmd)
+end
+
+shb = ShellB.new
+script = shb.transact do
+  a | b | c("--last", "--delimiter", "\t")
+end
+puts script # a | b | c --last --delimiter "\t"
+
+shb = ShellB.new
+script2 = shb.a("--help") | shb.e("last")
+puts shb.to_script # => a --help | e last
+
+shb.cd("/tmp") do
+  pwd
+end # => (cd /tmp ; pwd)
+
+# Handle Multiple Inputs into a Command
+# Allow variable names as arguments
+file1_csv = "/tmp/file1.csv"
+file2_csv = "/tmp/file2.csv"
+shb.transact do
+  diff \
+    < transact(do
+        xsv("sort", file1_csv) | head
+      end) \
+    < transact({
+        xsv("sort", file2_csv) | tail
+      })
+end # => diff <(xsv sort /tmp/file1.csv | head) <(xsv sort /tmp/file2.csv | tail)
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

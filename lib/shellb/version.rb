@@ -1,3 +1,3 @@
-module Shellb
-  VERSION = "0.1.0"
+module ShellB
+  VERSION = "0.0.1"
 end

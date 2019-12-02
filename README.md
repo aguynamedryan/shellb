@@ -109,6 +109,33 @@ shb.transact do
 end # => diff <(xsv sort /tmp/file1.csv | head) <(xsv sort /tmp/file2.csv | tail)
 ```
 
+## Future Ideas
+
+Some ideas I'm toying with:
+
+### Support for hash => switches
+
+It might be handy to feed a hash to a command and have that generate the appropriate switches for a command.
+
+Something like:
+
+```
+shb = ShellB.new
+shb.transact do
+  e(long_switch: "value", s: true)
+end
+puts shb.to_sh # => e --long-switch value -s
+```
+
+However, how do we handle some of the following?
+
+- Underscore vs dash in long names?
+  - E.g. does `long_switch_name` become `--long-switch-name` or `--long_switch_name`
+- For long switches, do we include an equals sign if a value is included?
+  - E.g. does `long_switch_name: "value"` become `--long-switch-name=value` or `--long-switch-name value`
+- For switches without arguments, do we relegate those to an array only, or allow them in the hash?
+  - E.g. does `s: true` become `-s`
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

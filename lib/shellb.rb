@@ -1,6 +1,9 @@
 require "shellb/version"
 require "shellb/shell"
-require "pry-byebug" rescue nil
+begin
+  require "pry-byebug"
+rescue LoadError
+end
 
 module ShellB
   class Error < StandardError; end

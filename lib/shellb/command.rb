@@ -1,3 +1,5 @@
+require "shellwords"
+
 module ShellB
   class Command
     attr_reader :name, :opts, :shell, :block
@@ -42,7 +44,12 @@ module ShellB
 
     def to_sh
       parts = []
-      parts << [name, *opts, *redirection_parts].join(" ")
+      parts << Shellwords.shelljoin([name, *opts])
+
+      unless (rd_parts = redirection_parts.join(" ")).empty?
+        parts.last << " " + rd_parts
+      end
+
       parts << downstream.to_sh if downstream
       parts.join(" | ")
     end

@@ -23,6 +23,13 @@ RSpec.describe ShellB::Command do
       expect(cmd.to_sh).to match(/ls -l >> append_dest.txt/)
     end
   end
+
+  describe "#to_sh" do
+    it "should quote what needs quoting" do
+      cmd = ShellB::Command.new(sh, "awk", "{ print $1 }")
+      expect(cmd.to_sh).to match('awk \\{\\ print\\ \\$1\\ \\}')
+    end
+  end
 end
 
 

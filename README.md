@@ -1,8 +1,27 @@
-# Shellb
+# ShellB
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/shellb`. To experiment with that code, run `bin/console` for an interactive prompt.
+`ShellB` (pronounced Shelby) is a shell script builder.  The goal is to be a (near) drop-in replacement for Ruby's `Shell` class
 
-TODO: Delete this and the text above, and describe your gem
+
+## FAQ
+
+### Wha?  Why?
+
+I've long loved Ruby's `Shell` class, essentially a DSL for building a shell script.
+
+Imagine my dismay when I realized that piping information between commands in `Shell` is done _through_ Ruby, making my beautiful shell scripts _slow_ and _hungry_ for memory.
+
+I wanted something that would build out my shell scripts like `Shell`, but would _stay_ in the shell where commands and pipes work quickly and smoothly.
+
+### I used `ShellB` in place of `Shell` and it didn't work
+
+Yikes.  I'm not surprised. The library Works For Me in that the few places I use it and I haven't really developed it beyond my own needs.
+
+Also, there are some differences I can't figure out how to avoid.
+
+### Why are there so many \\\\\\\\'s in my script?
+
+Ruby's `Shellwords` library does that.  If you know of a better library for properly escaping shell-related strings, let me know!
 
 ## Installation
 
@@ -22,7 +41,14 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+`ShellB` is intended to work similarly to Shell.  There are a few differences:
+
+1. All commands you intend to use must be defined via `ShellB.def_system_command`
+2. Unlike `Shell`, `ShellB` will not run any commands on its own.  You must either
+  - Call `#run` on a `ShellB::Shell` instance
+  - Call `ShellB::Shell#run { <commands here> }` which will immediately execute the script
+
+See the examples below.
 
 ## Examples
 
@@ -38,15 +64,29 @@ end
 puts script # a | b | c --last --delimiter "\t"
 
 shb = ShellB.new
-script2 = shb.a("--help") | shb.e("last")
+shb.a("--help") | shb.e("last")
 puts shb.to_script # => a --help | e last
 
+# Run a script
+shb = ShellB.new
+shb.a("--help") | shb.e("last")
+shb.run # creates a temporary script file and invokes it using Bash
+
+# Immediately run a script after building it
+ShellB.new.run do
+  a | b
+  c
+end
+
+# Support `cd` ala Shell
+# NOT YET IMPLEMENTED
 shb.cd("/tmp") do
   pwd
 end # => (cd /tmp ; pwd)
 
 # Handle Multiple Inputs into a Command
 # Allow variable names as arguments
+# NOT YET IMPLEMENTED
 file1_csv = "/tmp/file1.csv"
 file2_csv = "/tmp/file2.csv"
 shb.transact do

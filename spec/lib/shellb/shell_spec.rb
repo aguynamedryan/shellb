@@ -3,6 +3,7 @@ RSpec.describe ShellB::Shell do
   ShellB::Shell.def_system_command("foo")
   ShellB::Shell.def_system_command("bar")
   ShellB::Shell.def_system_command("baz")
+  ShellB::Shell.alias_command("alli", "ls", "-l")
 
   let(:shb) do
     ShellB::Shell.new
@@ -77,6 +78,13 @@ RSpec.describe ShellB::Shell do
       expect(script).to match(/baz/)
       expect(script).to match(/\|/)
       expect(script).to match(/bar\s*\|\s*baz/)
+    end
+
+    it "should handle aliases" do
+      shb.alli
+
+      script = shb.to_sh
+      expect(script).to match(/ls -l/)
     end
   end
 end

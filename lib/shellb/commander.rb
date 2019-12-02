@@ -13,7 +13,7 @@ module ShellB
 
       def alias_command(name, *args)
         define_method(name) do |*opts|
-          Command.new(sub_shell, *args, *opts)
+          Command.new(shell, *args, *opts)
         end
       end
     end

@@ -6,6 +6,10 @@ module ShellB
       def def_system_command(name, path = nil)
         Commander.def_system_command(name, path)
       end
+
+      def alias_command(name, *args)
+        Commander.alias_command(name, *args)
+      end
     end
 
     attr_reader :opts

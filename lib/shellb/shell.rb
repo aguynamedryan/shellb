@@ -1,3 +1,4 @@
+require "tempfile"
 require_relative "commander"
 
 module ShellB
@@ -31,6 +32,15 @@ module ShellB
 
     def drop_command(command)
       @commands -= [command]
+    end
+
+    def run
+      script = Tempfile.new("script.sh")
+      script.write(to_sh)
+      script.close
+      system("sh", script.path)
+    ensure
+      script.close!
     end
 
     def to_sh

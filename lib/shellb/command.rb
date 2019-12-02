@@ -16,24 +16,24 @@ module ShellB
 
     def >(to)
       @output = to
+      self
     end
 
     def >>(to)
       @append = to
+      self
     end
 
     def <(from)
       @input = from
+      self
     end
 
     def redirection_parts
       return [">", @output.to_s] if @output
       return [">>", @append.to_s] if @append
+      return ["<", @input.to_s] if @input
       return []
-    end
-
-    def children
-      @piper ? @piper.to_set : []
     end
 
     def to_s

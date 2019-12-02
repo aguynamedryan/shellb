@@ -57,15 +57,24 @@ See the examples below.
   ShellB.def_system_command(cmd)
 end
 
+# Support Shell's #transact method -- my favorite way to build a script
 shb = ShellB.new
 script = shb.transact do
   a | b | c("--last", "--delimiter", "\t")
 end
 puts script # a | b | c --last --delimiter "\t"
 
+# Invoke methods directly on ShellB::Shell instance
 shb = ShellB.new
 shb.a("--help") | shb.e("last")
-puts shb.to_script # => a --help | e last
+puts shb.to_sh # => a --help | e last
+
+# Mix transact and direct methods
+shb = ShellB.new
+shb.a("--help") | shb.transact do
+  e("last") > dest.txt
+end
+puts shb.to_sh # => a --help | e last > dest.txt
 
 # Run a script
 shb = ShellB.new

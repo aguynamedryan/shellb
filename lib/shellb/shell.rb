@@ -8,12 +8,14 @@ module ShellB
       end
     end
 
-    def initialize
+    attr_reader :opts
+    def initialize(opts = {})
       @commands = []
+      @opts = opts
     end
 
-    def transact(&block)
-      sub_shell = self.class.new
+    def transact(opts = {}, &block)
+      sub_shell = self.class.new(opts)
       sub_shell.instance_eval(&block)
       add_command(sub_shell)
     end
@@ -28,9 +30,10 @@ module ShellB
     end
 
     def to_sh
-      @commands.map do |command|
+      str = @commands.map do |command|
         command.to_sh
       end.join("\n\n")
+      wrap_it(str, opts[:parens])
     end
 
     def method_missing(meth, *args)
@@ -56,6 +59,20 @@ module ShellB
         pp.text "@commands="
         pp.pp @commands
       end
+    end
+
+    private
+
+    def wrap_it(str, wrap_char)
+      return str if wrap_char.nil?
+
+      wrap_char = "(" if wrap_char == true
+      end_char = {
+        "(" => ")",
+        "{" => "}",
+        "[" => "]"
+      }[wrap_char] || raise("No matching character for #{wrap_char}")
+      "#{wrap_char} #{str} #{end_char}"
     end
   end
 end

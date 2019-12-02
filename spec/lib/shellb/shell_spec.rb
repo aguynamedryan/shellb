@@ -36,6 +36,13 @@ RSpec.describe ShellB::Shell do
       expect(script).to match(/bar/)
       expect(script).not_to match(/\|/)
     end
+
+    it "should support parens" do
+      shb.transact(parens: true) do
+        foo
+      end
+      expect(shb.to_sh).to match(/( foo )/)
+    end
   end
 
   describe "with method called directly on shell" do

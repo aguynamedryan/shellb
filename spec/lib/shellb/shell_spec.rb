@@ -37,13 +37,6 @@ RSpec.describe ShellB::Shell do
       expect(script).to match(/bar/)
       expect(script).not_to match(/\|/)
     end
-
-    it "should support parens" do
-      shb.transact(parens: true) do
-        foo
-      end
-      expect(shb.to_sh).to match(/( foo )/)
-    end
   end
 
   describe "with method called directly on shell" do
@@ -85,6 +78,17 @@ RSpec.describe ShellB::Shell do
 
       script = shb.to_sh
       expect(script).to match(/ls -l/)
+    end
+  end
+
+  describe "#to_sh" do
+    it "should support exit_on_errors option" do
+      shb.foo
+      script = shb.to_sh(exit_on_errors: true)
+      expect(script).to match(/( foo )/)
+      expect(script).to match(/exit \$\?/)
+      expect(script).to match(/set -e/)
+      expect(script).to match(/set -x/)
     end
   end
 end

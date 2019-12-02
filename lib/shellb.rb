@@ -7,6 +7,7 @@ end
 
 module ShellB
   class Error < StandardError; end
+  class ExecutionError < StandardError; attr_accessor :script ; end
   # Your code goes here...
   class << self
     def new(*args)

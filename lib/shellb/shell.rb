@@ -19,10 +19,9 @@ module ShellB
       @opts = opts
     end
 
-    def transact(opts = {}, &block)
-      sub_shell = self.class.new(opts)
-      sub_shell.instance_eval(&block)
-      add_command(sub_shell)
+    def transact(&block)
+      instance_eval(&block)
+      @commands.last
     end
 
     def add_command(command)
@@ -34,25 +33,56 @@ module ShellB
       @commands -= [command]
     end
 
-    def run
+    def run(opts = {}, &block)
+      if block
+        transact(&block)
+      end
       script = Tempfile.new("script.sh")
-      script.write(to_sh)
+      script.write(to_sh(opts))
       script.close
-      system("sh", script.path)
+      output = `bash #{script.path}`
+      unless $?.exitstatus.zero?
+        ee = ShellB::ExecutionError.new(output)
+        ee.script = File.read(script)
+        raise ee
+      end
     ensure
       script.close!
     end
 
-    def to_sh
-      str = @commands.map do |command|
-        command.to_sh
+    def run!(opts = {}, &block)
+      run(opts.merge(exit_on_errors: true), &block)
+    end
+
+    def to_sh(opts = {})
+      str = make_preamble(opts)
+      str += @commands.map do |command|
+        decorate_command(command, opts)
       end.join("\n\n")
-      wrap_it(str, opts[:parens])
+      str
+    end
+
+    def decorate_command(command, opts)
+      cmd_str = command.to_sh
+      return cmd_str unless opts[:exit_on_errors]
+      cmd_str = wrap_it(cmd_str, "(") unless command.name == "cd"
+      "#{cmd_str} || exit $?"
     end
 
     def method_missing(meth, *args)
       return super unless commander.respond_to?(meth)
       add_command(commander.public_send(meth, *args))
+    end
+
+    def make_preamble(opts)
+      preamble = []
+      if opts[:exit_on_errors]
+        preamble << %w[set -x]
+        preamble << %w[set -e]
+        preamble << []
+      end
+      preamble = preamble.map { |pream| Shellwords.join(pream) }
+      preamble.join("\n")
     end
 
     def respond_to?(meth)

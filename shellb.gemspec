@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["aguynamedryan@gmail.com"]
 
   spec.summary       = %q{Light DSL to generate shell scripts}
-  spec.description   = %q{Ruby's Shell class is awesome, but it is slow and memory intensive because all IO passes through Ruby.  This gem is heavily inspired by the Shell class, but instead generates a script that executes in a shell without having Ruby in the mix, keeping things fast.}
+  spec.description   = %q{DSL for shell scripts similar to Ruby's Shell class.}
   spec.homepage      = "https://github.com/aguynamedryan/shellb"
   spec.license       = "MIT"
 

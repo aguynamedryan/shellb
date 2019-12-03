@@ -69,13 +69,6 @@ shb = ShellB.new
 shb.a("--help") | shb.e("last")
 puts shb.to_sh # => a --help | e last
 
-# Mix transact and direct methods
-shb = ShellB.new
-shb.a("--help") | shb.transact do
-  e("last") > dest.txt
-end
-puts shb.to_sh # => a --help | e last > dest.txt
-
 # Run a script
 shb = ShellB.new
 shb.a("--help") | shb.e("last")

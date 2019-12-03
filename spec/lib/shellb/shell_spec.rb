@@ -6,7 +6,7 @@ RSpec.describe ShellB::Shell do
   ShellB::Shell.alias_command("alli", "ls", "-l")
 
   let(:shb) do
-    ShellB::Shell.new
+    described_class.new
   end
 
   describe "#transact" do
@@ -89,6 +89,30 @@ RSpec.describe ShellB::Shell do
       expect(script).to match(/exit \$\?/)
       expect(script).to match(/set -e/)
       expect(script).to match(/set -x/)
+    end
+  end
+
+  describe "#run" do
+    it "executes the command" do
+      allow(shb).to receive(:`)
+      shb.foo
+      shb.run
+    end
+  end
+
+  describe "#run!" do
+    it "executes the command and exit on errors" do
+      expect(shb).to receive(:to_sh).with(hash_including(exit_on_errors: true))
+      shb.foo
+      shb.run!
+    end
+  end
+
+  describe "#attempt" do
+    it "attempts to execute the command and ignore errors" do
+      expect(shb).to receive(:to_sh).with(hash_including(ignore_errors: true))
+      shb.foo
+      shb.attempt
     end
   end
 end

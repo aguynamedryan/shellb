@@ -19,9 +19,21 @@ module ShellB
       @opts = opts
     end
 
-    def transact(&block)
-      instance_eval(&block)
-      @commands.last
+    def transact(opts = {}, &block)
+      instance_eval(&block) if block
+      check_point(opts) if opts[:execute]
+    end
+
+    def run(opts = {}, &block)
+      transact(opts.merge(execute: true), &block)
+    end
+
+    def run!(opts = {}, &block)
+      run(opts.merge(exit_on_errors: true), &block)
+    end
+
+    def attempt(opts = {}, &block)
+      run(opts.merge(ignore_errors: true), &block)
     end
 
     def add_command(command)
@@ -33,10 +45,7 @@ module ShellB
       @commands -= [command]
     end
 
-    def run(opts = {}, &block)
-      if block
-        transact(&block)
-      end
+    def check_point(opts = {})
       script = Tempfile.new("script.sh")
       script.write(to_sh(opts))
       script.close
@@ -46,13 +55,13 @@ module ShellB
         ee.script = File.read(script)
         raise ee
       end
+    rescue ShellB::ExecutionError => ee
+      raise(ee) unless opts[:ignore_errors]
     ensure
+      @commands = []
       script.close!
     end
-
-    def run!(opts = {}, &block)
-      run(opts.merge(exit_on_errors: true), &block)
-    end
+    alias execute check_point
 
     def to_sh(opts = {})
       str = make_preamble(opts)
@@ -64,9 +73,15 @@ module ShellB
 
     def decorate_command(command, opts)
       cmd_str = command.to_sh
-      return cmd_str unless opts[:exit_on_errors]
+      append = if opts[:exit_on_errors]
+                 "exit $?"
+               elsif opts[:ignore_errors]
+                 "true"
+               else
+                 nil
+               end
       cmd_str = wrap_it(cmd_str, "(") unless command.name == "cd"
-      "#{cmd_str} || exit $?"
+      [cmd_str, append].compact.join(" || ")
     end
 
     def method_missing(meth, *args)
@@ -91,10 +106,6 @@ module ShellB
 
     def commander
       @commander ||= Commander.new(self)
-    end
-
-    def check_point
-      #no-op
     end
 
     def pretty_print(pp)
